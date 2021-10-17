@@ -4,38 +4,49 @@ import "@tensorflow/tfjs-backend-cpu";
 import "@tensorflow/tfjs-backend-webgl";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
 
-const imgRef = ref<HTMLImageElement | null>(null);
+const videoRef = ref<HTMLVideoElement | null>(null);
+const canvasRef = ref<HTMLCanvasElement | null>(null);
 const predictions = ref<cocoSsd.DetectedObject[]>([]);
 
 onMounted(async () => {
-  const model = await cocoSsd.load();
-  if (imgRef.value) {
-    predictions.value = await model.detect(imgRef.value);
-  }
-});
+  const videoStream = await navigator.mediaDevices.getUserMedia({
+    video: {},
+  });
+  videoRef.value.srcObject = videoStream;
+  const ctx = canvasRef.value.getContext("2d");
 
-const data = [
-  {
-    bbox: [
-      352.39471435546875, 98.01229476928711, 1115.8493041992188,
-      932.5198745727539,
-    ],
-    class: "car",
-    score: 0.7384861707687378,
-  },
-  {
-    bbox: [
-      507.1244430541992, 526.9650435447693, 251.62731170654297,
-      276.28345012664795,
-    ],
-    class: "car",
-    score: 0.5097262263298035,
-  },
-];
+  const model = await cocoSsd.load();
+
+  //videoRef.value.addEventListener("play", async () => {
+  async function step() {
+    predictions.value = await model.detect(videoRef.value);
+    ctx.drawImage(videoRef.value, 0, 0, 640, 480);
+    for (let i = 0; i < predictions.value.length; i++) {
+      ctx.beginPath();
+      ctx.rect(...predictions.value[i].bbox);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "green";
+      ctx.fillStyle = "green";
+      ctx.stroke();
+      ctx.fillText(
+        predictions.value[i].score.toFixed(3) +
+          " " +
+          predictions.value[i].class,
+        predictions.value[i].bbox[0],
+        predictions.value[i].bbox[1] > 10
+          ? predictions.value[i].bbox[1] - 5
+          : 10
+      );
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+});
 </script>
 
 <template>
   <div>Hello world</div>
   <pre>{{ predictions }}</pre>
-  <img ref="imgRef" src="/example1.jpg" />
+  <canvas ref="canvasRef" width="640" height="480"></canvas>
+  <video ref="videoRef" autoplay />
 </template>
