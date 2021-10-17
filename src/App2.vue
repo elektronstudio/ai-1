@@ -11,30 +11,31 @@ const human = new Human({
 
 onMounted(async () => {
   const videoStream = await navigator.mediaDevices.getUserMedia({
-    video: { frameRate: 10 },
+    video: {},
   });
-  // console.log(videoStream);
-  // console.log(videoRef.value.srcObject);
   if (videoRef.value) {
     videoRef.value.srcObject = videoStream;
   }
-  // navigator.mediaDevices
-  //   .getUserMedia({ video: { frameRate: 10 } })
-  //   .then((stream) => (videoRef.value.srcObject = stream))
-  //   .catch((e) => console.log(e));
-
-  // async function detectVideo() {
-  //   const result = await human.detect(videoRef.value);
-  //   human.draw.all(canvasRef.value, result);
-  //   requestAnimationFrame(detectVideo);
-  // }
-  // detectVideo();
+  async function detectVideo() {
+    if (videoRef.value) {
+      const result = await human.detect(videoRef.value);
+      human.draw.canvas(result.canvas, canvasRef.value);
+      human.draw.all(canvasRef.value, result);
+    }
+    requestAnimationFrame(detectVideo);
+  }
+  detectVideo();
 });
 </script>
 
 <template>
   <div>
-    <video ref="videoRef" autoplay playsinline></video>
-    <canvas ref="canvasRef"></canvas>
+    <canvas ref="canvasRef" width="640" height="480"></canvas>
+    <video
+      ref="videoRef"
+      autoplay
+      playsinline
+      style="position: fixed; top: 0; left: 0; opacity: 0; pointer-events: none"
+    ></video>
   </div>
 </template>
