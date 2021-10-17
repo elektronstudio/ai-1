@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import Human from "@vladmandic/human";
-
 import { onMounted, ref } from "vue";
+import Human from "@vladmandic/human";
 const videoRef = ref<HTMLVideoElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const res = ref(null);
 const human = new Human({
   backend: "webgl",
-  modelBasePath: "/models",
 });
 
 onMounted(async () => {
@@ -20,9 +18,20 @@ onMounted(async () => {
   async function detectVideo() {
     if (videoRef.value) {
       const result = await human.detect(videoRef.value);
+      const {
+        face,
+        body,
+        hand,
+        gesture,
+        object,
+        performance,
+        canvas,
+        timestamp,
+        persons,
+      } = result;
       human.draw.canvas(result.canvas, canvasRef.value);
       human.draw.all(canvasRef.value, result);
-      res.value = result;
+      res.value = { hand, gesture, object, persons, face };
     }
     requestAnimationFrame(detectVideo);
   }
@@ -34,12 +43,12 @@ onMounted(async () => {
   <div>
     <canvas ref="canvasRef" width="640" height="480"></canvas>
     <pre v-if="!res">Loading...</pre>
-    <pre>{{ res }}</pre>
+    <p>{{ res }}</p>
     <video
       ref="videoRef"
       autoplay
       playsinline
-      sstyle="position: fixed; top: 0; left: 0; opacity: 0; pointer-events: none"
+      style="position: fixed; top: 0; left: 0; opacity: 0; pointer-events: none"
     ></video>
   </div>
 </template>

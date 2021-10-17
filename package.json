@@ -12,6 +12,7 @@
     "@tensorflow/tfjs-backend-wasm": "^3.9.0",
     "@tensorflow/tfjs-core": "^3.9.0",
     "@tensorflow/tfjs-node-gpu": "^3.9.0",
+    "@vladmandic/human": "^2.3.3",
     "vue": "^3.2.16"
   },
   "devDependencies": {
