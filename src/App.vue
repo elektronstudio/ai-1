@@ -1,4 +1,5 @@
 <script setup lang="ts">
+//@ts-nocheck
 import { ref, onMounted } from "vue";
 import "@tensorflow/tfjs-backend-cpu";
 import "@tensorflow/tfjs-backend-webgl";
