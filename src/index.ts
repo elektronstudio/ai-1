@@ -7,15 +7,15 @@ import "./index.css";
 const routes = [
   {
     path: "/",
-    component: () => import(`./pages/App1.vue`),
+    component: () => import(`./pages/Objects.vue`),
   },
   {
-    path: "/app2",
-    component: () => import(`./pages/App2.vue`),
+    path: "/human",
+    component: () => import(`./pages/Human.vue`),
   },
   {
-    path: "/app3",
-    component: () => import(`./pages/App3.vue`),
+    path: "/holistic",
+    component: () => import(`./pages/Holistic.vue`),
   },
 ];
 

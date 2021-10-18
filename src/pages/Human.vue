@@ -41,20 +41,9 @@ onMounted(async () => {
 
 <template>
   <div>
+    <p v-if="!res">Loading...</p>
     <canvas ref="canvasRef" width="640" height="480"></canvas>
-    <pre v-if="!res">Loading...</pre>
-    <p>{{ res }}</p>
-    <video
-      ref="videoRef"
-      autoplay
-      playsinline
-      style="
-        position: fixed;
-        top: 100vh;
-        left: 0;
-        opacity: 1;
-        pointer-events: none;
-      "
-    ></video>
+    <video ref="videoRef" autoplay playsinline></video>
+    <pre>{{ res }}</pre>
   </div>
 </template>

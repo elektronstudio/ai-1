@@ -7,7 +7,7 @@ import * as cocoSsd from "@tensorflow-models/coco-ssd";
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-const predictions = ref<cocoSsd.DetectedObject[]>([]);
+const predictions = ref<cocoSsd.DetectedObject[] | null>(null);
 
 onMounted(async () => {
   const videoStream = await navigator.mediaDevices.getUserMedia({
@@ -46,6 +46,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <p v-if="!predictions">Loading...</p>
   <canvas ref="canvasRef" width="640" height="480"></canvas>
   <video ref="videoRef" autoplay />
   <pre>{{ predictions }}</pre>

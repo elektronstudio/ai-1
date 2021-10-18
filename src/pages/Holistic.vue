@@ -11,6 +11,7 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 
 const videoRef = ref<HTMLVideoElement>();
 const canvasRef = ref<HTMLCanvasElement>();
+const r = ref(null);
 
 onMounted(async () => {
   const videoStream = await navigator.mediaDevices.getUserMedia({
@@ -25,6 +26,7 @@ onMounted(async () => {
   }
 
   function onResults(results) {
+    r.value = results;
     if (canvasRef.value && ctx) {
       ctx.save();
       ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
@@ -112,6 +114,8 @@ onMounted(async () => {
 </script>
 
 <template>
+  <p v-if="!r">Loading...</p>
   <canvas ref="canvasRef" width="640" height="480"></canvas>
   <video ref="videoRef" autoplay style="opacity: 1" />
+  <pre>{{ r }}</pre>
 </template>
