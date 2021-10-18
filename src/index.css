@@ -1,4 +1,12 @@
 body {
   margin: 0;
+  padding: 16px;
   font-family: sans-serif;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  text-decoration: underline;
 }
