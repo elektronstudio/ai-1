@@ -7,12 +7,17 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1632432234",
+    "@mediapipe/control_utils": "^0.6.1629159505",
+    "@mediapipe/drawing_utils": "^0.3.1620248257",
+    "@mediapipe/holistic": "^0.4.1633559476",
     "@tensorflow-models/coco-ssd": "^2.2.2",
     "@tensorflow/tfjs": "^3.9.0",
     "@tensorflow/tfjs-backend-wasm": "^3.9.0",
     "@tensorflow/tfjs-core": "^3.9.0",
     "@tensorflow/tfjs-node-gpu": "^3.9.0",
     "@vladmandic/human": "^2.3.3",
+    "@vueuse/core": "^6.6.1",
     "vue": "^3.2.16"
   },
   "devDependencies": {
