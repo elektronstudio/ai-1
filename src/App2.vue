@@ -48,7 +48,13 @@ onMounted(async () => {
       ref="videoRef"
       autoplay
       playsinline
-      style="position: fixed; top: 0; left: 0; opacity: 0; pointer-events: none"
+      style="
+        position: fixed;
+        top: 100vh;
+        left: 0;
+        opacity: 1;
+        pointer-events: none;
+      "
     ></video>
   </div>
 </template>
