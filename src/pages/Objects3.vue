@@ -139,6 +139,11 @@ onMounted(async () => {
           ctx.fill();
           ctx.closePath();
         });
+        if (o.xDev < 7) {
+          ctx.lineWidth = 10;
+          ctx.stroke();
+          ctx.arc(...o.currentCenter, 50, 0, 2 * Math.PI);
+        }
       });
 
       if (count > limit) {
@@ -147,7 +152,7 @@ onMounted(async () => {
       } else {
         count++;
       }
-      if (videoRef.value.currentTime > 3) {
+      if (videoRef.value.currentTime > 1) {
         videoRef.value.currentTime = 0;
       }
     }
