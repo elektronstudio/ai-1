@@ -61,6 +61,10 @@ onMounted(async () => {
     playing.value = true;
   });
 
+  videoRef.value.addEventListener("loadeddata", (e) => {
+    playing.value = true;
+  });
+
   videoRef.value.addEventListener("seeking", (e) => {
     playing.value = false;
   });
@@ -130,12 +134,8 @@ onMounted(async () => {
         o.buffer.forEach((b, j) => {
           ctx.fillStyle = `hsl(${i * 30},100%,50%,0.05)`;
           ctx.beginPath();
-          ctx.lineWidth = 1;
           ctx.strokeStyle = "red";
           ctx.arc(b[0], b[1], 30 + j, 0, 2 * Math.PI);
-          // ctx.arc(...o.center, 10, 0, 2 * Math.PI);
-          // ctx.stroke();
-          //ctx.arc(...o.currentCenter, 50, 0, 2 * Math.PI);
           ctx.fill();
           ctx.closePath();
         });
@@ -190,7 +190,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="transform: scale(1)">
+  <div>
     <p>Status: {{ playing ? "Playing" : "Not playing" }}</p>
     <p v-if="!predictions">Loading...</p>
     <canvas
@@ -208,6 +208,21 @@ onMounted(async () => {
       style="width: 100vw"
     />
     <!-- <video ref="videoRef" autoplay muted loop style="width: 100vw" /> -->
-    <pre>{{ objects }}</pre>
+    <div
+      style="
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 200px;
+        padding: 10px;
+        background: #000000dd;
+        font-family: monospace;
+        color: white;
+        overflow: auto;
+      "
+    >
+      {{ objects }}
+    </div>
   </div>
 </template>
