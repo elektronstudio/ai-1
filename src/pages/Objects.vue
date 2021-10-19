@@ -1,9 +1,10 @@
 <script setup lang="ts">
 //@ts-nocheck
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import "@tensorflow/tfjs-backend-cpu";
 import "@tensorflow/tfjs-backend-webgl";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
+//import { tidy, mutateWithSummary, roll, mean } from "@tidyjs/tidy";
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -11,16 +12,47 @@ const predictions = ref<cocoSsd.DetectedObject[] | null>(null);
 const width = ref(0);
 const height = ref(0);
 
+// tidy(
+//   data,
+//   mutateWithSummary({
+//     movingAvg: roll(3, mean('value'), { partial: true }),
+//   })
+// )
+
+// function useBuffer(size) {
+//   const buffer = ref([]);
+//   const push = (value) => {
+//     buffer.value = [...buffer.value, value];
+//     if (buffer.value.length > size) {
+//       buffer.value.shift();
+//     }
+//   };
+//   const avg = computed(() =>
+//     buffer.value.length
+//       ? Math.floor(buffer.value.reduce((a, b) => a + b) / size)
+//       : null
+//   );
+//   return { buffer, push, avg };
+// }
+
+function pointInCircle(x, y, cx, cy, radius) {
+  var distancesquared = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+  return distancesquared <= radius * radius;
+}
+
+const buf = ref([]);
+
 onMounted(async () => {
-  // const devices = await navigator.mediaDevices.enumerateDevices();
-  // console.log(devices);
-  // const videoStream = await navigator.mediaDevices.getUserMedia({
-  //   video: {
-  //     deviceId:
-  //       "4e51f67844f0d40aa0a002fe8d8413faf5230dd328d8235f6b9b87d9ad9dfb1c",
-  //   },
-  // });
-  // videoRef.value.srcObject = videoStream;
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  console.log(devices);
+  const videoStream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      fps: 10,
+      deviceId:
+        "4e51f67844f0d40aa0a002fe8d8413faf5230dd328d8235f6b9b87d9ad9dfb1c",
+    },
+  });
+  videoRef.value.srcObject = videoStream;
 
   videoRef.value.addEventListener("loadedmetadata", (e) => {
     width.value = e.target.videoWidth;
@@ -38,34 +70,34 @@ onMounted(async () => {
   }
 
   async function step() {
-    predictions.value = await model.detect(videoRef.value, 100, 0.1);
-    ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
-    for (let i = 0; i < predictions.value.length; i++) {
-      const cX =
-        predictions.value[i].bbox[2] / 2 + predictions.value[i].bbox[0];
-      const cY =
-        predictions.value[i].bbox[3] / 2 + predictions.value[i].bbox[1];
-      ctx.beginPath();
-      ctx.rect(...predictions.value[i].bbox);
-      if (i > 0) {
-        ctx.moveTo(...center(predictions.value[i].bbox));
-        ctx.lineTo(...center(predictions.value[i - 1].bbox));
-      }
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "green";
-      ctx.fillStyle = "green";
-      ctx.rect(...[...center(predictions.value[i].bbox), 10, 10]);
-      ctx.stroke();
-      ctx.font = "50px Arial";
-      ctx.fillText(
-        `${predictions.value[i].class} ${predictions.value[i].score.toFixed(
-          3
-        )} `,
-        predictions.value[i].bbox[0],
-        predictions.value[i].bbox[1] > 10
-          ? predictions.value[i].bbox[1] - 5
-          : 10
-      );
+    if (videoRef.value) {
+      predictions.value = await model.detect(videoRef.value, 100, 0.5);
+      ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
+      predictions.value
+        //.filter((p) => p.class === "person")
+        .map((p) => {
+          p.center = center(p.bbox);
+          return p;
+        })
+        .forEach((p, i) => {
+          ctx.beginPath();
+          ctx.rect(...p.bbox);
+          if (i > 0) {
+            ctx.moveTo(...p.center);
+            ctx.lineTo(...center(predictions.value[i - 1].bbox));
+          }
+          ctx.lineWidth = 7;
+          ctx.strokeStyle = "green";
+          ctx.fillStyle = "green";
+          ctx.rect(...[p.center[0] - 25, p.center[1] - 25, 50, 50]);
+          ctx.stroke();
+          ctx.font = "50px Arial";
+          ctx.fillText(
+            `${p.class} ${p.score.toFixed(3)} `,
+            p.bbox[0],
+            p.bbox[1] > 10 ? p.bbox[1] - 5 : 10
+          );
+        });
     }
     requestAnimationFrame(step);
   }
@@ -82,14 +114,15 @@ onMounted(async () => {
       :height="height"
       style="width: 50vw"
     ></canvas>
-    <video
+    <!-- <video
       ref="videoRef"
       autoplay
       muted
       loop
       src="/sample1.mp4"
       style="width: 50vw"
-    />
+    /> -->
+    <video ref="videoRef" autoplay muted loop style="width: 50vw" />
     <pre>{{ predictions }}</pre>
   </div>
 </template>
