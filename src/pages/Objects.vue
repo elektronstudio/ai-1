@@ -55,12 +55,12 @@ onMounted(async () => {
   useRafFn(() => {
     const center = [Math.random() * 100 + 200, Math.random() * 100 + 200];
     const objectIndex = objects.findIndex((o) =>
-      pointInsideCircle(...center, ...o.center, 10)
+      pointInsideCircle(...center, ...o.center, 100)
     );
-
     if (objectIndex > -1) {
-      objects[objectIndex].updated = true;
+      //      objects[objectIndex].updated = true;
     } else {
+      // objects.forEach((_, i) => (objects[i].updated = false));
       objects.push({ updated: true, center });
       //console.log("new");
     }
@@ -81,16 +81,21 @@ onMounted(async () => {
     ctx.font = "20px Arial";
     ctx.fillStyle = "green";
     objects
-      .filter((o) => o.updated)
+      // .filter((o) => o.updated)
       .forEach((o) => {
         ctx.fillRect(...o.center, 10, 10);
       });
     ctx.fillText(count, 50, 50);
-    ctx.fillText(
-      JSON.stringify(objects.filter((o) => !o.updated).length),
-      50,
-      150
-    );
+    // ctx.fillText(
+    //   JSON.stringify(objects.filter((o) => o.updated).length),
+    //   50,
+    //   150
+    // );
+    // ctx.fillText(
+    //   JSON.stringify(objects.filter((o) => !o.updated).length),
+    //   50,
+    //   200
+    // );
     ctx.fillStyle = "red";
     ctx.fillRect(...center, 10, 10);
 
@@ -99,8 +104,8 @@ onMounted(async () => {
       //   o.updated = false;
       //   return o;
       // });
-      objects.forEach((_, i) => (objects[i].updated = false));
-      console.log(objects);
+      //objects.forEach((_, i) => (objects[i].updated = false));
+      //objects = objects.filter((o) => o.updated);
       count = 0;
     } else {
       count++;
