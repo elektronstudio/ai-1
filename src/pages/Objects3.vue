@@ -7,6 +7,7 @@ import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import { useRafFn } from "@vueuse/core";
 import { buffer } from "@tensorflow/tfjs-core";
 import standardDeviation from "just-standard-deviation";
+import { line, curveCatmullRomClosed } from "d3-shape";
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -61,9 +62,9 @@ onMounted(async () => {
     playing.value = true;
   });
 
-  videoRef.value.addEventListener("loadeddata", (e) => {
-    playing.value = true;
-  });
+  // videoRef.value.addEventListener("loadeddata", (e) => {
+  //   playing.value = true;
+  // });
 
   videoRef.value.addEventListener("seeking", (e) => {
     playing.value = false;
@@ -88,11 +89,11 @@ onMounted(async () => {
   let prevCenter = [0, 0];
   let drawableCenter = [0, 0];
   const limit = 60;
-  const bufferSize = 10;
+  const bufferSize = 20;
 
   useRafFn(async () => {
     if (playing.value) {
-      predictions.value = await model.detect(videoRef.value, 100, 0.5);
+      predictions.value = await model.detect(videoRef.value, 100, 0.4);
 
       predictions.value
         .map((p) => {
@@ -116,6 +117,8 @@ onMounted(async () => {
             objects.value[objectIndex].yDev = standardDeviation(
               objects.value[objectIndex].buffer.map(([x, y]) => y)
             );
+            objects.value[objectIndex].still =
+              objects.value[objectIndex].xDev < 5;
           } else {
             objects.value.forEach((_, i) => (objects.value[i].updated = false));
             objects.value.push({
@@ -123,6 +126,7 @@ onMounted(async () => {
               currentCenter: p.center,
               updated: true,
               buffer: [p.center],
+              still: false,
             });
             //console.log("new");
           }
@@ -132,65 +136,47 @@ onMounted(async () => {
       ctx.font = "20px Arial";
       objects.value.forEach((o, i) => {
         o.buffer.forEach((b, j) => {
-          ctx.fillStyle = `hsl(${i * 30},100%,50%,0.05)`;
+          ctx.fillStyle = `hsl(${i * 30},100%,50%,1)`;
           ctx.beginPath();
           ctx.strokeStyle = "red";
           ctx.arc(b[0], b[1], 30 + j, 0, 2 * Math.PI);
           ctx.fill();
           ctx.closePath();
         });
-        if (o.xDev < 7) {
-          ctx.lineWidth = 10;
-          ctx.stroke();
+        if (o.still) {
+          ctx.lineWidth = 5;
           ctx.arc(...o.currentCenter, 50, 0, 2 * Math.PI);
+          ctx.stroke();
+          //ctx.closePath();
+          // objects.value
+          //   .filter((oo) => oo.still)
+          //   .forEach((oo, i) => {
+          //     ctx.beginPath();
+          //     line().context(ctx)([o.currentCenter, oo.currentCenter]);
+          //     ctx.stroke();
+          //     ctx.closePath();
+          //   });
         }
+        ctx.lineWidth = 50;
+        ctx.strokeStyle = "rgba(255,255,0,0.1)";
+        line().curve(curveCatmullRomClosed.alpha(1)).context(ctx)(
+          objects.value.filter((oo) => oo.still).map((oo) => oo.currentCenter)
+        );
+        ctx.stroke();
+        ctx.closePath();
       });
 
       if (count > limit) {
-        //objects.value = [];
+        objects.value = [];
         count = 0;
       } else {
         count++;
       }
-      if (videoRef.value.currentTime > 1) {
+      if (videoRef.value.currentTime > 2) {
         videoRef.value.currentTime = 0;
       }
     }
   });
-
-  // async function step() {
-  //   if (videoRef.value) {
-  //     predictions.value = await model.detect(videoRef.value, 100, 0.5);
-  //     ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
-  //     predictions.value
-  //       //.filter((p) => p.class === "person")
-  //       .map((p) => {
-  //         p.center = center(p.bbox);
-  //         return p;
-  //       })
-  //       .forEach((p, i) => {
-  //         ctx.beginPath();
-  //         ctx.rect(...p.bbox);
-  //         if (i > 0) {
-  //           ctx.moveTo(...p.center);
-  //           ctx.lineTo(...center(predictions.value[i - 1].bbox));
-  //         }
-  //         ctx.lineWidth = 7;
-  //         ctx.strokeStyle = "green";
-  //         ctx.fillStyle = "green";
-  //         ctx.rect(...[p.center[0] - 25, p.center[1] - 25, 50, 50]);
-  //         ctx.stroke();
-  //         ctx.font = "50px Arial";
-  //         ctx.fillText(
-  //           `${p.class} ${p.score.toFixed(3)} `,
-  //           p.bbox[0],
-  //           p.bbox[1] > 10 ? p.bbox[1] - 5 : 10
-  //         );
-  //       });
-  //   }
-  //   requestAnimationFrame(step);
-  // }
-  // requestAnimationFrame(step);
 });
 </script>
 
@@ -215,11 +201,12 @@ onMounted(async () => {
     <!-- <video ref="videoRef" autoplay muted loop style="width: 100vw" /> -->
     <div
       style="
+        opacity: 0;
         position: fixed;
         top: 0;
-        right: 0;
+        right: 0px;
         bottom: 0;
-        width: 200px;
+        width: 300px;
         padding: 10px;
         background: #000000dd;
         font-family: monospace;
