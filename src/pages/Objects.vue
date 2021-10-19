@@ -49,23 +49,20 @@ onMounted(async () => {
   let count = 0;
   let prevCenter = [0, 0];
   let drawableCenter = [0, 0];
-  const limit = 500;
-  const objects = [];
+  let objects = [];
+  const limit = 100;
 
   useRafFn(() => {
     const center = [Math.random() * 100 + 200, Math.random() * 100 + 200];
-    // if (objects.length === 0) {
-    //   objects.push(center);
-    // }
     const objectIndex = objects.findIndex((o) =>
-      pointInsideCircle(...center, ...o, 50)
+      pointInsideCircle(...center, ...o.center, 10)
     );
 
     if (objectIndex > -1) {
-      console.log("old");
+      objects[objectIndex].updated = true;
     } else {
-      objects.push(center);
-      console.log("new");
+      objects.push({ updated: true, center });
+      //console.log("new");
     }
 
     // if (!pointInsideCircle(...center, ...prevCenter, 5)) {
@@ -79,23 +76,35 @@ onMounted(async () => {
     //   // objects.push(center);
     //   console.log("new");
     // }
+
+    ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "green";
+    objects
+      .filter((o) => o.updated)
+      .forEach((o) => {
+        ctx.fillRect(...o.center, 10, 10);
+      });
+    ctx.fillText(count, 50, 50);
+    ctx.fillText(
+      JSON.stringify(objects.filter((o) => !o.updated).length),
+      50,
+      150
+    );
+    ctx.fillStyle = "red";
+    ctx.fillRect(...center, 10, 10);
+
     if (count > limit) {
-      console.log("limit!");
+      // objects = objects.map((o) => {
+      //   o.updated = false;
+      //   return o;
+      // });
+      objects.forEach((_, i) => (objects[i].updated = false));
+      console.log(objects);
       count = 0;
     } else {
       count++;
     }
-    ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
-    ctx.font = "20px Arial";
-    ctx.fillStyle = "green";
-    objects.forEach((o) => {
-      ctx.fillRect(...o, 10, 10);
-    });
-    ctx.fillText(count, 50, 50);
-    ctx.fillText(objects.length, 50, 100);
-    ctx.fillText(JSON.stringify(objects), 50, 150);
-    ctx.fillStyle = "red";
-    ctx.fillRect(...center, 10, 10);
   });
 
   // async function step() {
