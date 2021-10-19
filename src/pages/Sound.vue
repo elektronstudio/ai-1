@@ -2,18 +2,33 @@
 import * as Tone from "tone";
 import { ref } from "vue";
 
-const a = ref(0);
+const frame = ref(0);
 
-const synth = new Tone.Synth().toDestination();
+const fps = 1;
+const length = 50;
+
+const synths = Array.from({ length }).map((_) =>
+  new Tone.Synth().toDestination()
+);
+
+let values = [];
 
 const onStart = () => {
   Tone.start().then(() => {
     new Tone.Loop((time) => {
       Tone.Draw.schedule(() => {
-        a.value = Math.floor((time * 60) % 60);
+        frame.value = Math.floor((time * fps) % fps);
+        values = Array.from({ length }).map((_) => 100 + Math.random() * 10);
+        if (frame.value === 0) {
+          values[10] = values[10] + 500 + Math.random() * 500;
+        }
+        values.forEach((freq, i) => {
+          synths[i].triggerAttackRelease(freq, 1 / fps);
+        });
       }, time);
-    }, 1 / 60).start(0);
+    }, 1 / fps).start(0);
     Tone.Transport.start();
+    //const osc = new Tone.Oscillator(440, "sine").toDestination().start();
   });
 };
 
@@ -35,7 +50,7 @@ const onStart = () => {
 
 <template>
   <div>
-    <div>{{ a }}</div>
+    <pre>{{ frame }}</pre>
     <button @click="onStart">Button</button>
   </div>
 </template>

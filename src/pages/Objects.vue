@@ -31,8 +31,8 @@ onMounted(async () => {
   const videoStream = await navigator.mediaDevices.getUserMedia({
     video: {
       fps: 10,
-      //deviceId:
-      //  "4e51f67844f0d40aa0a002fe8d8413faf5230dd328d8235f6b9b87d9ad9dfb1c",
+      deviceId:
+        "4e51f67844f0d40aa0a002fe8d8413faf5230dd328d8235f6b9b87d9ad9dfb1c",
     },
   });
   videoRef.value.srcObject = videoStream;
@@ -50,7 +50,7 @@ onMounted(async () => {
   let prevCenter = [0, 0];
   let drawableCenter = [0, 0];
   let objects = [];
-  const limit = 100;
+  const limit = 60;
 
   useRafFn(async () => {
     predictions.value = await model.detect(videoRef.value, 100, 0.5);
@@ -60,9 +60,10 @@ onMounted(async () => {
         p.center = center(p.bbox);
         return p;
       })
+      .filter((p) => p.class === "person")
       .forEach((p, i) => {
         const objectIndex = objects.findIndex((o) =>
-          pointInsideCircle(...p.center, ...o.center, 300)
+          pointInsideCircle(...p.center, ...o.center, 100)
         );
         if (objectIndex > -1) {
           objects[objectIndex].currentCenter = p.center;
@@ -100,24 +101,26 @@ onMounted(async () => {
     ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
     ctx.font = "20px Arial";
     ctx.fillStyle = "green";
-    objects
-      // .filter((o) => o.updated)
-      .forEach((o) => {
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "green";
-        ctx.arc(...o.center, 10, 0, 2 * Math.PI);
-        ctx.stroke();
-        ctx.strokeStyle = "red";
-        ctx.arc(...o.currentCenter, 10, 0, 2 * Math.PI);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(...o.center);
-        ctx.lineTo(...o.currentCenter);
-        ctx.stroke();
-        ctx?.closePath();
-        ctx.fillText(o.bbox[0], o.center[0] + 10, o.center[0] + 10);
-      });
-    ctx.fillText(count, 50, 50);
+    objects.forEach((o) => {
+      ctx.beginPath();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "green";
+      ctx.arc(...o.center, 100, 0, 2 * Math.PI);
+      ctx.arc(...o.center, 10, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.strokeStyle = "red";
+      ctx.arc(...o.currentCenter, 10, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.closePath();
+      //ctx.stroke();
+      // ctx.beginPath();
+      // ctx.moveTo(...o.center);
+      // ctx.lineTo(...o.currentCenter);
+      // ctx.stroke();
+      // ctx?.closePath();
+      // ctx.fillText(o.bbox[0], o.center[0] + 10, o.center[0] + 10);
+    });
+    // ctx.fillText(count, 50, 50);
     //ctx.fillText(JSON.stringify(objects.filter((o) => o.updated)), 50, 150);
     // ctx.fillText(
     //   JSON.stringify(objects.filter((o) => !o.updated).length),
@@ -132,7 +135,8 @@ onMounted(async () => {
       //   o.updated = false;
       //   return o;
       // });
-      objects.forEach((_, i) => (objects[i].updated = false));
+      objects = [];
+      //objects.forEach((_, i) => (objects[i].updated = false));
       //objects = objects.filter((o) => o.updated);
       count = 0;
     } else {
@@ -183,7 +187,7 @@ onMounted(async () => {
       ref="canvasRef"
       :width="width"
       :height="height"
-      style="width: 50vw"
+      style="width: 75vw"
     ></canvas>
     <!-- <video
       ref="videoRef"
@@ -193,7 +197,7 @@ onMounted(async () => {
       src="/sample1.mp4"
       style="width: 50vw"
     /> -->
-    <video ref="videoRef" autoplay muted loop style="width: 50vw" />
+    <video ref="videoRef" autoplay muted loop style="width: 75vw" />
     <pre>{{ predictions }}</pre>
   </div>
 </template>
