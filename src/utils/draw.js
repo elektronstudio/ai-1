@@ -7,7 +7,7 @@ export function draw(ctx, objects) {
       ctx.fillStyle = `hsl(${i * 30},100%,50%,1)`;
       ctx.beginPath();
       ctx.strokeStyle = "red";
-      ctx.arc(b[0], b[1], 30 + j, 0, 2 * Math.PI);
+      ctx.arc(b[0], b[1], 10 + j, 0, 2 * Math.PI);
       ctx.fill();
       ctx.closePath();
     });
