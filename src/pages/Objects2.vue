@@ -8,9 +8,9 @@ import * as cocoSsd from "@tensorflow-models/coco-ssd";
 
 const frame = ref(0);
 
-const fps = 10;
-const videoFps = 2;
-const length = 5;
+const fps = 60;
+const videoFps = 30;
+const length = 25;
 let values = [];
 
 const synths = Array.from({ length }).map((_) =>
@@ -73,7 +73,7 @@ const onStart = async () => {
 
         if (frame.value % videoFps === 0) {
           if (width.value) {
-            predictions.value = await model.detect(videoRef.value, 100, 0.5);
+            predictions.value = await model.detect(videoRef.value, 100, 0.01);
             ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
 
             predictions.value
@@ -81,18 +81,22 @@ const onStart = async () => {
                 p.center = center(p.bbox);
                 return p;
               })
-              .filter((p) => p.class === "person")
+              .filter((p) => {
+                console.log(p.class);
+                //return true;
+                return p.class === "person";
+              })
               .forEach((p, i) => {
                 const objectIndex = objects.findIndex((o) =>
                   pointInsideCircle(...p.center, ...o.center, 100)
                 );
                 if (objectIndex > -1) {
-                  objects[objectIndex].currentCenter = p.center;
+                  objects[objectIndex].currentCenter = [p.center[0], p.bbox[1]];
                 } else {
                   objects.forEach((_, i) => (objects[i].updated = false));
                   objects.push({
                     ...p,
-                    currentCenter: p.center,
+                    currentCenter: [p.center[0], p.bbox[1]],
                     updated: true,
                   });
                 }
@@ -103,9 +107,9 @@ const onStart = async () => {
             ctx.font = "20px Arial";
             ctx.fillStyle = "green";
 
-            objects.forEach((o) => {
+            objects.forEach((o, i) => {
               ctx.beginPath();
-              ctx.lineWidth = 1;
+              ctx.lineWidth = 10;
               ctx.strokeStyle = "green";
               ctx.arc(...o.center, 100, 0, 2 * Math.PI);
               ctx.arc(...o.center, 10, 0, 2 * Math.PI);
@@ -114,19 +118,25 @@ const onStart = async () => {
               ctx.arc(...o.currentCenter, 10, 0, 2 * Math.PI);
               ctx.stroke();
               ctx.closePath();
+              const off = o.center[1] - o.currentCenter[1];
+              console.log(i % length, off);
+              synths[i % length].triggerAttackRelease(
+                Math.max(0, 130 + off / 4),
+                (1 / fps) * 100
+              );
             });
 
-            if (frame.value === limit) {
+            if (frame.value % 20 === 0) {
               objects = [];
             }
           }
         }
         // Sound
 
-        values = Array.from({ length }).map((_) => 100 + Math.random() * 10);
-        values.forEach((freq, i) => {
-          synths[i].triggerAttackRelease(freq, 1 / fps);
-        });
+        // values = Array.from({ length }).map((_) => 100 + Math.random() * 10);
+        //values.forEach((freq, i) => {
+        //          synths[i].triggerAttackRelease(freq, 1 / fps);
+        //});
         // if (frame.value === 0) {
         //   outlierSynth.triggerAttackRelease(
         //     200 + Math.random() * 200 - 100,
