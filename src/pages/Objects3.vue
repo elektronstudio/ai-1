@@ -94,7 +94,7 @@ onMounted(async () => {
       autoplay
       muted
       loop
-      src="/sample4.mp4"
+      src="/sample3.mp4"
       style="width: 50vw"
     />
     <!-- <video ref="videoRef" autoplay muted loop style="width: 100vw" /> -->
