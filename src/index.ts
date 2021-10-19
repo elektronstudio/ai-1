@@ -10,6 +10,10 @@ const routes = [
     component: () => import(`./pages/Objects.vue`),
   },
   {
+    path: "/sound",
+    component: () => import(`./pages/Sound.vue`),
+  },
+  {
     path: "/human",
     component: () => import(`./pages/Human.vue`),
   },

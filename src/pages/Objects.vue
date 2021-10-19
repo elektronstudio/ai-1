@@ -44,7 +44,7 @@ onMounted(async () => {
 
   const ctx = canvasRef.value.getContext("2d");
 
-  //const model = await cocoSsd.load();
+  const model = await cocoSsd.load();
 
   let count = 0;
   let prevCenter = [0, 0];
@@ -52,18 +52,38 @@ onMounted(async () => {
   let objects = [];
   const limit = 100;
 
-  useRafFn(() => {
-    const center = [Math.random() * 100 + 200, Math.random() * 100 + 200];
-    const objectIndex = objects.findIndex((o) =>
-      pointInsideCircle(...center, ...o.center, 100)
-    );
-    if (objectIndex > -1) {
-      //      objects[objectIndex].updated = true;
-    } else {
-      // objects.forEach((_, i) => (objects[i].updated = false));
-      objects.push({ updated: true, center });
-      //console.log("new");
-    }
+  useRafFn(async () => {
+    predictions.value = await model.detect(videoRef.value, 100, 0.5);
+
+    predictions.value
+      .map((p) => {
+        p.center = center(p.bbox);
+        return p;
+      })
+      .forEach((p, i) => {
+        const objectIndex = objects.findIndex((o) =>
+          pointInsideCircle(...p.center, ...o.center, 300)
+        );
+        if (objectIndex > -1) {
+          objects[objectIndex].currentCenter = p.center;
+        } else {
+          objects.forEach((_, i) => (objects[i].updated = false));
+          objects.push({ ...p, currentCenter: p.center, updated: true });
+          //console.log("new");
+        }
+      });
+
+    //const center = [Math.random() * 100 + 200, Math.random() * 100 + 200];
+    // const objectIndex = objects.findIndex((o) =>
+    //   pointInsideCircle(...center, ...o.center, 100)
+    // );
+    // if (objectIndex > -1) {
+    //   //      objects[objectIndex].updated = true;
+    // } else {
+    //   // objects.forEach((_, i) => (objects[i].updated = false));
+    //   objects.push({ updated: true, center });
+    //   //console.log("new");
+    // }
 
     // if (!pointInsideCircle(...center, ...prevCenter, 5)) {
     //   console.log("in center");
@@ -83,28 +103,36 @@ onMounted(async () => {
     objects
       // .filter((o) => o.updated)
       .forEach((o) => {
-        ctx.fillRect(...o.center, 10, 10);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "green";
+        ctx.arc(...o.center, 10, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.strokeStyle = "red";
+        ctx.arc(...o.currentCenter, 10, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(...o.center);
+        ctx.lineTo(...o.currentCenter);
+        ctx.stroke();
+        ctx?.closePath();
+        ctx.fillText(o.bbox[0], o.center[0] + 10, o.center[0] + 10);
       });
     ctx.fillText(count, 50, 50);
-    // ctx.fillText(
-    //   JSON.stringify(objects.filter((o) => o.updated).length),
-    //   50,
-    //   150
-    // );
+    //ctx.fillText(JSON.stringify(objects.filter((o) => o.updated)), 50, 150);
     // ctx.fillText(
     //   JSON.stringify(objects.filter((o) => !o.updated).length),
     //   50,
     //   200
     // );
     ctx.fillStyle = "red";
-    ctx.fillRect(...center, 10, 10);
+    // ctx.fillRect(...center, 10, 10);
 
     if (count > limit) {
       // objects = objects.map((o) => {
       //   o.updated = false;
       //   return o;
       // });
-      //objects.forEach((_, i) => (objects[i].updated = false));
+      objects.forEach((_, i) => (objects[i].updated = false));
       //objects = objects.filter((o) => o.updated);
       count = 0;
     } else {

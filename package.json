@@ -19,6 +19,7 @@
     "@tidyjs/tidy": "^2.4.4",
     "@vladmandic/human": "^2.3.3",
     "@vueuse/core": "^6.6.1",
+    "tone": "^14.7.77",
     "vue": "^3.2.16",
     "vue-router": "^4.0.12"
   },
