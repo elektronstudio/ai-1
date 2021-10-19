@@ -7,7 +7,7 @@ import "./index.css";
 const routes = [
   {
     path: "/",
-    component: () => import(`./pages/Objects.vue`),
+    component: () => import(`./pages/Objects2.vue`),
   },
   {
     path: "/sound",

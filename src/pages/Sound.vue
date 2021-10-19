@@ -5,11 +5,20 @@ import { ref } from "vue";
 const frame = ref(0);
 
 const fps = 1;
-const length = 50;
+const length = 5;
 
 const synths = Array.from({ length }).map((_) =>
   new Tone.Synth().toDestination()
 );
+const outlierSynth = new Tone.MonoSynth({
+  portamento: (1 / fps) * 0.5,
+}).toDestination();
+
+/*const synths2 = Array.from({ length }).map((_) =>
+  new Tone.Oscillator().toDestination().start()
+);
+const outlierSynth2 = new Tone.Oscillator().toDestination().start();
+*/
 
 let values = [];
 
@@ -19,12 +28,15 @@ const onStart = () => {
       Tone.Draw.schedule(() => {
         frame.value = Math.floor((time * fps) % fps);
         values = Array.from({ length }).map((_) => 100 + Math.random() * 10);
-        if (frame.value === 0) {
-          values[10] = values[10] + 500 + Math.random() * 500;
-        }
         values.forEach((freq, i) => {
           synths[i].triggerAttackRelease(freq, 1 / fps);
         });
+        if (frame.value === 0) {
+          outlierSynth.triggerAttackRelease(
+            200 + Math.random() * 200 - 100,
+            1 / fps
+          );
+        }
       }, time);
     }, 1 / fps).start(0);
     Tone.Transport.start();
