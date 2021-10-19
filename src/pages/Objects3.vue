@@ -90,6 +90,7 @@ onMounted(async () => {
   let drawableCenter = [0, 0];
   const limit = 60;
   const bufferSize = 20;
+  const maxDev = 50;
 
   useRafFn(async () => {
     if (playing.value) {
@@ -118,7 +119,7 @@ onMounted(async () => {
               objects.value[objectIndex].buffer.map(([x, y]) => y)
             );
             objects.value[objectIndex].still =
-              objects.value[objectIndex].xDev < 5;
+              objects.value[objectIndex].xDev < maxDev;
           } else {
             objects.value.forEach((_, i) => (objects.value[i].updated = false));
             objects.value.push({
@@ -157,11 +158,16 @@ onMounted(async () => {
           //     ctx.closePath();
           //   });
         }
-        ctx.lineWidth = 50;
+        ctx.lineWidth = 10;
         ctx.strokeStyle = "rgba(255,255,0,0.1)";
-        line().curve(curveCatmullRomClosed.alpha(1)).context(ctx)(
-          objects.value.filter((oo) => oo.still).map((oo) => oo.currentCenter)
-        );
+        const obj = objects.value
+          .filter((oo) => oo.still)
+          .map((oo) => oo.currentCenter);
+        Array.from({ length: 3 })
+          .map((_) => (Math.random() - 0.5) * 2)
+          .forEach((a) =>
+            line().curve(curveCatmullRomClosed.alpha(a)).context(ctx)(obj)
+          );
         ctx.stroke();
         ctx.closePath();
       });
@@ -173,7 +179,7 @@ onMounted(async () => {
         count++;
       }
       if (videoRef.value.currentTime > 2) {
-        videoRef.value.currentTime = 0;
+        //videoRef.value.currentTime = 0;
       }
     }
   });
@@ -188,15 +194,15 @@ onMounted(async () => {
       ref="canvasRef"
       :width="width"
       :height="height"
-      style="width: 100vw"
+      style="width: 50vw"
     ></canvas>
     <video
       ref="videoRef"
       autoplay
       muted
       loop
-      src="/sample2.mp4"
-      style="width: 100vw"
+      src="/sample3.mp4"
+      style="width: 50vw"
     />
     <!-- <video ref="videoRef" autoplay muted loop style="width: 100vw" /> -->
     <div
