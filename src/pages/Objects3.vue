@@ -21,22 +21,22 @@ const playing = ref(false);
 
 const overlayOpacity = ref(0.8);
 const dotsOpacity = ref(1);
-const lineCount = ref(5);
+const lineCount = ref(0);
 const prob = ref(0.5);
 const onlyPersons = ref(1);
-const minDev = 20;
+const minDev = 30;
 const maxDev = ref(minDev);
 
 onMounted(async () => {
-  // const devices = await navigator.mediaDevices.enumerateDevices();
-  // const videoStream = await navigator.mediaDevices.getUserMedia({
-  //   video: {
-  //     fps: 10,
-  //     deviceId:
-  //       "4e51f67844f0d40aa0a002fe8d8413faf5230dd328d8235f6b9b87d9ad9dfb1c",
-  //   },
-  // });
-  // videoRef.value.srcObject = videoStream;
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videoStream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      fps: 10,
+      deviceId:
+        "4e51f67844f0d40aa0a002fe8d8413faf5230dd328d8235f6b9b87d9ad9dfb1c",
+    },
+  });
+  videoRef.value.srcObject = videoStream;
 
   videoRef.value.addEventListener("loadedmetadata", (e) => {
     width.value = e.target.videoWidth;
@@ -58,6 +58,7 @@ onMounted(async () => {
   let frameCount = 0;
   const limit = 60;
   const HAVE_ENOUGH_DATA = 4;
+
   useRafFn(async () => {
     if (videoRef.value?.readyState === HAVE_ENOUGH_DATA) {
       predictions.value = await model.detect(videoRef.value, 100, prob.value);
@@ -91,23 +92,22 @@ onMounted(async () => {
 
 <template>
   <div>
-    <p>Status: {{ playing ? "Playing" : "Not playing" }}</p>
-    <p v-if="!predictions">Loading...</p>
     <canvas
       ref="canvasRef"
       :width="width"
       :height="height"
-      style="width: 50vw"
+      style="width: 100vw"
     ></canvas>
-    <video
+    <!-- <video
       ref="videoRef"
       autoplay
       muted
       loop
       src="/sample3.mp4"
       style="width: 50vw"
-    />
-    <!-- <video ref="videoRef" autoplay muted loop style="width: 100vw" /> -->
+    /> -->
+    <p>Status: {{ playing ? "Playing" : "Not playing" }}</p>
+    <p v-if="!predictions">Loading...</p>
     <div
       style="
         opacity: 1;
@@ -115,12 +115,14 @@ onMounted(async () => {
         top: 0;
         right: 0;
         bottom: 0;
-        width: 150px;
-        padding: 10px;
+        width: 200px;
+        padding: 20px;
         /* background: #000000dd; */
         font-family: monospace;
+        color: rgba(255, 255, 255, 0.2);
       "
     >
+      <video ref="videoRef" autoplay muted loop style="width: 0px" />
       <input
         style="width: 100%; display: block"
         type="range"
