@@ -19,6 +19,10 @@ const height = ref(0);
 const objects = ref([]);
 const playing = ref(false);
 
+const overlayOpacity = ref(0.8);
+const dotsOpacity = ref(1);
+const lineCount = ref(5);
+
 onMounted(async () => {
   // const devices = await navigator.mediaDevices.enumerateDevices();
   // const videoStream = await navigator.mediaDevices.getUserMedia({
@@ -63,7 +67,9 @@ onMounted(async () => {
         .map((p) => mapObject(p, objects));
 
       ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
-      draw(ctx, objects);
+      ctx.fillStyle = `rgba(0,0,0,${overlayOpacity.value})`;
+      ctx.fillRect(0, 0, width.value, height.value);
+      draw(ctx, objects, dotsOpacity, lineCount);
 
       if (frameCount > limit) {
         //objects.value = [];
@@ -100,20 +106,40 @@ onMounted(async () => {
     <!-- <video ref="videoRef" autoplay muted loop style="width: 100vw" /> -->
     <div
       style="
-        opacity: 0;
+        opacity: 1;
         position: fixed;
         top: 0;
-        right: 0px;
+        right: 0;
         bottom: 0;
-        width: 300px;
+        width: 100px;
         padding: 10px;
-        background: #000000dd;
+        /* background: #000000dd; */
         font-family: monospace;
-        color: white;
-        overflow: auto;
       "
     >
-      {{ objects }}
+      <input
+        style="width: 100%; display: block"
+        type="range"
+        v-model="overlayOpacity"
+        max="1"
+        step="0.01"
+      />
+      <div>{{ overlayOpacity }}</div>
+      <input
+        style="width: 100%; display: block"
+        type="range"
+        v-model="dotsOpacity"
+        max="1"
+        step="0.01"
+      />
+      <div>{{ dotsOpacity }}</div>
+      <input
+        style="width: 100%; display: block"
+        type="range"
+        v-model="lineCount"
+        max="100"
+      />
+      <div>{{ lineCount }}</div>
     </div>
   </div>
 </template>
