@@ -23,6 +23,7 @@ const overlayOpacity = ref(0.8);
 const dotsOpacity = ref(1);
 const lineCount = ref(5);
 const prob = ref(0.5);
+const onlyPersons = ref(1);
 
 onMounted(async () => {
   // const devices = await navigator.mediaDevices.enumerateDevices();
@@ -64,7 +65,7 @@ onMounted(async () => {
           p.center = center(p.bbox);
           return p;
         })
-        //.filter((p) => p.class === "person")
+        .filter((p) => (onlyPersons.value ? p.class === "person" : true))
         .map((p) => mapObject(p, objects));
 
       ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
@@ -145,10 +146,18 @@ onMounted(async () => {
         style="width: 100%; display: block"
         type="range"
         v-model="prob"
+        min="0.01"
         max="1"
         step="0.01"
       />
       <div>{{ prob }}</div>
+      <input
+        style="width: 100%; display: block"
+        type="range"
+        v-model="onlyPersons"
+        max="1"
+      />
+      <div>{{ onlyPersons }}</div>
     </div>
   </div>
 </template>
