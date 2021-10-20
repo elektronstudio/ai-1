@@ -2,9 +2,8 @@ import standardDeviation from "just-standard-deviation";
 import { pointInsideCircle } from "./utils";
 
 const bufferSize = 20;
-const maxDev = 10;
 
-export function mapObject(p, objects) {
+export function mapObject(p, objects, maxDev) {
   const objectIndex = objects.value.findIndex((o) =>
     pointInsideCircle(...p.center, ...o.center, 150)
   );
@@ -20,7 +19,8 @@ export function mapObject(p, objects) {
     objects.value[objectIndex].yDev = standardDeviation(
       objects.value[objectIndex].buffer.map(([x, y]) => y)
     );
-    objects.value[objectIndex].still = objects.value[objectIndex].xDev < maxDev;
+    objects.value[objectIndex].still =
+      objects.value[objectIndex].xDev < maxDev.value;
   } else {
     objects.value.forEach((_, i) => (objects.value[i].updated = false));
     objects.value.push({

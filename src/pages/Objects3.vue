@@ -24,6 +24,8 @@ const dotsOpacity = ref(1);
 const lineCount = ref(5);
 const prob = ref(0.5);
 const onlyPersons = ref(1);
+const minDev = 20;
+const maxDev = ref(minDev);
 
 onMounted(async () => {
   // const devices = await navigator.mediaDevices.enumerateDevices();
@@ -66,7 +68,7 @@ onMounted(async () => {
           return p;
         })
         .filter((p) => (onlyPersons.value ? p.class === "person" : true))
-        .map((p) => mapObject(p, objects));
+        .map((p) => mapObject(p, objects, maxDev));
 
       ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
       ctx.fillStyle = `rgba(0,0,0,${overlayOpacity.value})`;
@@ -113,7 +115,7 @@ onMounted(async () => {
         top: 0;
         right: 0;
         bottom: 0;
-        width: 100px;
+        width: 150px;
         padding: 10px;
         /* background: #000000dd; */
         font-family: monospace;
@@ -126,7 +128,8 @@ onMounted(async () => {
         max="1"
         step="0.01"
       />
-      <div>{{ overlayOpacity }}</div>
+      <div>opacity {{ overlayOpacity }}</div>
+      <br />
       <input
         style="width: 100%; display: block"
         type="range"
@@ -134,14 +137,16 @@ onMounted(async () => {
         max="1"
         step="0.01"
       />
-      <div>{{ dotsOpacity }}</div>
+      <div>dotsOpacity {{ dotsOpacity }}</div>
+      <br />
       <input
         style="width: 100%; display: block"
         type="range"
         v-model="lineCount"
         max="50"
       />
-      <div>{{ lineCount }}</div>
+      <div>Count {{ lineCount }}</div>
+      <br />
       <input
         style="width: 100%; display: block"
         type="range"
@@ -150,14 +155,22 @@ onMounted(async () => {
         max="1"
         step="0.01"
       />
-      <div>{{ prob }}</div>
+      <div>Probability {{ prob }}</div>
+      <br />
+      <input
+        style="width: 100%; display: block"
+        type="range"
+        v-model="maxDev"
+        :min="minDev"
+      />
+      <div>stillnessThresold {{ maxDev }}</div>
+      <br />
       <input
         style="width: 100%; display: block"
         type="range"
         v-model="onlyPersons"
         max="1"
       />
-      <div>{{ onlyPersons }}</div>
     </div>
   </div>
 </template>
