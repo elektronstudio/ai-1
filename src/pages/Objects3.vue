@@ -22,6 +22,7 @@ const playing = ref(false);
 const overlayOpacity = ref(0.8);
 const dotsOpacity = ref(1);
 const lineCount = ref(5);
+const prob = ref(0.5);
 
 onMounted(async () => {
   // const devices = await navigator.mediaDevices.enumerateDevices();
@@ -56,14 +57,14 @@ onMounted(async () => {
   const HAVE_ENOUGH_DATA = 4;
   useRafFn(async () => {
     if (videoRef.value?.readyState === HAVE_ENOUGH_DATA) {
-      predictions.value = await model.detect(videoRef.value, 100, 0.4);
+      predictions.value = await model.detect(videoRef.value, 100, prob.value);
 
       predictions.value
         .map((p) => {
           p.center = center(p.bbox);
           return p;
         })
-        .filter((p) => p.class === "person")
+        //.filter((p) => p.class === "person")
         .map((p) => mapObject(p, objects));
 
       ctx.drawImage(videoRef.value, 0, 0, width.value, height.value);
@@ -137,9 +138,17 @@ onMounted(async () => {
         style="width: 100%; display: block"
         type="range"
         v-model="lineCount"
-        max="100"
+        max="50"
       />
       <div>{{ lineCount }}</div>
+      <input
+        style="width: 100%; display: block"
+        type="range"
+        v-model="prob"
+        max="1"
+        step="0.01"
+      />
+      <div>{{ prob }}</div>
     </div>
   </div>
 </template>
